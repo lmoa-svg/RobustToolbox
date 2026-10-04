@@ -3,7 +3,7 @@
 	url = https://github.com/space-wizards/netserializer
 [submodule "Lidgren.Network"]
 	path = Lidgren.Network/Lidgren.Network
-	url = https://github.com/red-wing-ss14/SpaceWizards.Lidgren.Network.git
+	url = https://github.com/lmoa-svg/SpaceWizards.Lidgren.Network
 [submodule "XamlX"]
 	path = XamlX
 	url = https://github.com/space-wizards/XamlX
