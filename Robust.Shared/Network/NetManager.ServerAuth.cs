@@ -371,6 +371,7 @@ namespace Robust.Shared.Network
         {
             DebugTools.Assert(message.SenderConnection != null);
             var connection = message.SenderConnection;
+            // TODO: Maybe preemptively refuse connections here in some cases?
             if (connection.Status != NetConnectionStatus.RespondedAwaitingApproval)
             {
                 // This can happen if the approval message comes in after the state changes to disconnected.
@@ -378,33 +379,18 @@ namespace Robust.Shared.Network
                 return;
             }
 
-            if (!TryAcquireConnectionSlot(connection, out var denyReason))
+            if (HandleApprovalCallback != null)
             {
-                RejectHandshakeConnection(connection, denyReason);
-                return;
-            }
+                var approval = await HandleApprovalCallback(new NetApprovalEventArgs(connection));
 
-            try
-            {
-                if (HandleApprovalCallback != null)
+                if (!approval.IsApproved)
                 {
-                    var approval = await HandleApprovalCallback(new NetApprovalEventArgs(connection));
-
-                    if (!approval.IsApproved)
-                    {
-                        ReleaseConnectionSlot(connection);
-                        RejectHandshakeConnection(connection, approval.DenyReason);
-                        return;
-                    }
+                    connection.Deny(approval.DenyReason);
+                    return;
                 }
+            }
 
-                connection.Approve();
-            }
-            catch
-            {
-                ReleaseConnectionSlot(connection);
-                throw;
-            }
+            connection.Approve();
         }
 
         // ReSharper disable ClassNeverInstantiated.Local
